@@ -9,6 +9,7 @@ import requests
 import requests.compat
 
 
+# todo: option to reduce gross by 5% and increase prices by 5%  like when you buy and sell
 # todo: print values got from api
 # todo: crazy idea - download and parse wiki pages in the money making category to get item lists
 # the biggest obstacle apart from a lot of work would probably be figuring out base_item
