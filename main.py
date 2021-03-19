@@ -192,6 +192,10 @@ def main(coins_available=None):
         coins_available = product_gross
         if input('\nEnter to continue, Q then Enter to quit\n').lower() == 'q':
             break
+        print(
+            f'Coins in: {coins_available}\n'
+            '(from previous total gross)'
+        )
 
 
 if __name__ == '__main__':
