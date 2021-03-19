@@ -144,6 +144,8 @@ def main():
     for item in item_ratios:
         print(f'Quantity of {item}: {calc_item_quantity(item_ratios[item], quantity)}')
 
+    input('\nPress enter to exit\n')
+
 
 if __name__ == '__main__':
     main()
