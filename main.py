@@ -9,11 +9,10 @@ import requests
 import requests.compat
 
 
-# todo: calculate profit
 # todo: print values got from api
 # todo: crazy idea - download and parse wiki pages in the money making category to get item lists
 # the biggest obstacle apart from a lot of work would probably be figuring out base_item
-__version__ = '0.1.2'
+__version__ = '0.2.0'
 
 API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/api/'
 
