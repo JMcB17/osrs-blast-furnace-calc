@@ -130,10 +130,22 @@ def calc_total_expense(quantity, values):
     return total
 
 
+def get_quantity(coins_available, values):
+    quantity = inv_space
+    while True:
+        if (calc_total_expense(quantity, values)) >= coins_available:
+            quantity -= inv_space
+            break
+        quantity += inv_space
+
+    return quantity
+
+
 def main():
     args = parser.parse_args()
     if args.coins_available is not None:
         coins_available = args.coins_available
+        print(f'Coins in: {coins_available}')
     else:
         coins_available = input('Coins in: ')
     coins_available = rs_notation_to_int(coins_available)
@@ -147,19 +159,16 @@ def main():
     print('Getting item values from api\n')
     values = {i: get_item_value_by_id(item_ids[i]) for i in item_ids}
 
-    quantity = inv_space
-    while True:
-        if (calc_total_expense(quantity, values)) >= coins_available:
-            quantity -= inv_space
-            break
-        quantity += inv_space
-
-    print('---Results---')
+    quantity = get_quantity(coins_available, values)
     total_expense = calc_total_expense(quantity, values)
-    print(f'Total expense: {total_expense}')
     time_seconds = calc_item_quantity(time_ratio_seconds, quantity)
     time_string = time.strftime('%H:%M', time.gmtime(time_seconds))
-    print(f'Time to use up items: {time_seconds}s, {time_string}h\n')
+
+    print(
+        '---Results---'
+        f'Total expense: {total_expense}'
+        f'Time to use up items: {time_seconds}s, {time_string}h\n'
+    )
     for item in item_ratios:
         print(f'Quantity of {item}: {calc_item_quantity(item_ratios[item], quantity)}')
 
