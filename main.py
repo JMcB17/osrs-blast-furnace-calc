@@ -146,19 +146,23 @@ def get_quantity(coins_available, values):
     return quantity
 
 
-def main():
-    args = parser.parse_args()
-    if args.coins_available is not None:
-        coins_available = args.coins_available
+def main(coins_available=None):
+    if coins_available is not None:
         print(f'Coins in: {coins_available}')
     else:
-        coins_available = input('Coins in: ')
-    coins_available = rs_notation_to_int(coins_available)
+        args = parser.parse_args()
+        if args.coins_available is not None:
+            coins_available = args.coins_available
+            print(f'Coins in: {coins_available}')
+        else:
+            coins_available = input('Coins in: ')
+    if type(coins_available) == str:
+        coins_available = rs_notation_to_int(coins_available)
 
     print('\nGetting api last updated time')
     api_info = requests.get(requests.compat.urljoin(API_BASE_URL, 'info.json')).json()
     last_update_runeday = api_info['lastConfigUpdateRuneday']
-    print(f'api last updated runescape day {last_update_runeday}')
+    print(f'API last updated runescape day {last_update_runeday}')
 
     # values = {i: get_item_value(i, categories[i]) for i in categories}
     print('Getting item values from api\n')
