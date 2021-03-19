@@ -8,6 +8,13 @@ import requests.compat
 API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/api/'
 
 
+# todo: calculate profit
+# todo: print values got from api
+# todo: crazy idea - download and parse wiki pages in the money making category to get item lists
+# the biggest obstacle apart from a lot of work would probably be figuring out base_item
+__version__ = '0.1.1'
+
+
 def get_item_value_by_name(item_name, category=1):
     if category is None:
         return 1
