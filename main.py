@@ -1,4 +1,6 @@
-from decimal import Decimal
+import math
+import decimal
+
 import requests
 import requests.compat
 
@@ -95,7 +97,11 @@ base_item = 'Adamantite ore'
 
 
 def calc_item_quantity(item, quantity):
-    return (Decimal(quantity) / Decimal(ratios[base_item])) * ratios[item]
+    quantity = decimal.Decimal(quantity)
+    base_item_ratio = decimal.Decimal(ratios[base_item])
+    item_quantity = (quantity / base_item_ratio) * ratios[item]
+    item_quantity = math.ceil(item_quantity)
+    return item_quantity
 
 
 def calc_total_expense(quantity, values):
