@@ -100,15 +100,20 @@ item_ratios = {
 #     'Coal': 1,
 #     'Stamina potion(4)': 1,
 # }
+
+# https://www.reddit.com/r/2007scape/comments/3g06rq/guide_using_the_old_school_ge_page_api/
+# https://pastebin.com/LhxJ7GRG
 item_ids = {
     'Coins': None,
     'Adamantite ore': 449,
     'Coal': 453,
     'Stamina potion(4)': 12625,
+    'Adamantite bar': 2361,
 }
 
 time_ratio_seconds = 400
 base_item = 'Adamantite ore'
+product_item = 'Adamantite bar'
 
 
 def calc_item_quantity(item_ratio, quantity):
@@ -157,17 +162,25 @@ def main():
 
     # values = {i: get_item_value(i, categories[i]) for i in categories}
     print('Getting item values from api\n')
-    values = {i: get_item_value_by_id(item_ids[i]) for i in item_ids}
+    item_values = {i: get_item_value_by_id(item_ids[i]) for i in item_ids}
 
-    quantity = get_quantity(coins_available, values)
-    total_expense = calc_total_expense(quantity, values)
+    quantity = get_quantity(coins_available, item_values)
+    base_item_quantity = calc_item_quantity(item_ratios[base_item], quantity)
+    product_gross = base_item_quantity * item_values[product_item]
+    total_expense = calc_total_expense(quantity, item_values)
+    profit = product_gross - total_expense
+
     time_seconds = calc_item_quantity(time_ratio_seconds, quantity)
     time_string = time.strftime('%H:%M', time.gmtime(time_seconds))
+    profit_per_hour = int(decimal.Decimal(profit) / (decimal.Decimal(time_seconds) / decimal.Decimal(60**2)))
 
     print(
-        '---Results---'
-        f'Total expense: {total_expense}'
+        '---Results---\n'
+        f'Total expense: {total_expense}\n'
+        f'Total gross: {product_gross}\n'
+        f'Total profit: {profit}\n'
         f'Time to use up items: {time_seconds}s, {time_string}h\n'
+        f'Profit per hour: {profit_per_hour}\n'
     )
     for item in item_ratios:
         print(f'Quantity of {item}: {calc_item_quantity(item_ratios[item], quantity)}')
