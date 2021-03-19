@@ -68,7 +68,7 @@ def get_item_value_by_id(item_id):
 
 inv_space = 27
 
-ratios = {
+item_ratios = {
     'Coins': 8000,
     'Adamantite ore': 300,
     'Coal': 900,
@@ -99,7 +99,8 @@ base_item = 'Adamantite ore'
 
 def calc_item_quantity(item_ratio, quantity):
     quantity = decimal.Decimal(quantity)
-    base_item_ratio = decimal.Decimal(ratios[base_item])
+    base_item_ratio = decimal.Decimal(item_ratios[base_item])
+
     item_quantity = (quantity / base_item_ratio) * item_ratio
     item_quantity = math.ceil(item_quantity)
     return item_quantity
@@ -107,8 +108,8 @@ def calc_item_quantity(item_ratio, quantity):
 
 def calc_total_expense(quantity, values):
     total = 0
-    for item in ratios:
-        item_quantity = calc_item_quantity(ratios[item], quantity)
+    for item in item_ratios:
+        item_quantity = calc_item_quantity(item_ratios[item], quantity)
         item_expense = item_quantity * values[item]
         total += item_expense
 
@@ -140,8 +141,8 @@ def main():
     time_seconds = calc_item_quantity(time_ratio_seconds, quantity)
     time_string = time.strftime('%H:%M', time.gmtime(time_seconds))
     print(f'Time to use up items: {time_seconds}s, {time_string}h\n')
-    for item in ratios:
-        print(f'Quantity of {item}: {calc_item_quantity(ratios[item], quantity)}')
+    for item in item_ratios:
+        print(f'Quantity of {item}: {calc_item_quantity(item_ratios[item], quantity)}')
 
 
 if __name__ == '__main__':
