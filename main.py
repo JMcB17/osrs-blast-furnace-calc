@@ -13,13 +13,15 @@ import requests.compat
 # todo: print values got from api
 # todo: crazy idea - download and parse wiki pages in the money making category to get item lists
 # the biggest obstacle apart from a lot of work would probably be figuring out base_item
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/api/'
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('coins_available', nargs='?')
+parser.add_argument('--version', action='version', version=__version__)
+parser.add_argument('coins_available', nargs='?',
+                    help="coins to spend on inputs, you'll be prompted for input if you don't give it here")
 
 
 def get_item_value_by_name(item_name, category=1):
