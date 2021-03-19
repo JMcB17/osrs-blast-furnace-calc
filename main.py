@@ -3,11 +3,6 @@ import requests.compat
 
 API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/api/'
 
-print('Getting api last updated time')
-api_info = requests.get(requests.compat.urljoin(API_BASE_URL, 'info.json')).json()
-last_update_runeday = api_info['lastConfigUpdateRuneday']
-print(f'api last updated runescape day {last_update_runeday}')
-
 
 def get_item_value_by_name(item_name, category=1):
     if category is None:
@@ -97,16 +92,12 @@ item_ids = {
 time_ratio_seconds = 400
 base_item = 'Adamantite ore'
 
-# values = {i: get_item_value(i, categories[i]) for i in categories}
-print('Getting item values from api')
-values = {i: get_item_value_by_id(item_ids[i]) for i in item_ids}
-
 
 def calc_item_quantity(item, quantity):
     return (quantity / ratios[base_item]) * ratios[item]
 
 
-def calc_total_expense(quantity):
+def calc_total_expense(quantity, values):
     total = 0
     for item in ratios:
         item_quantity = calc_item_quantity(item, quantity)
@@ -119,12 +110,23 @@ def calc_total_expense(quantity):
 def main():
     coins_available = rs_notation_to_int(input('Coins in: '))
 
+    print('Getting api last updated time')
+    api_info = requests.get(requests.compat.urljoin(API_BASE_URL, 'info.json')).json()
+    last_update_runeday = api_info['lastConfigUpdateRuneday']
+    print(f'api last updated runescape day {last_update_runeday}')
+
+    # values = {i: get_item_value(i, categories[i]) for i in categories}
+    print('Getting item values from api')
+    values = {i: get_item_value_by_id(item_ids[i]) for i in item_ids}
+
     quantity = inv_space
     while True:
-        if (total_expense := calc_total_expense(quantity)) >= coins_available:
+        if (calc_total_expense(quantity, values)) >= coins_available:
+            quantity -= inv_space
             break
         quantity += inv_space
 
+    total_expense = calc_total_expense(quantity, values)
     print(f'Total expense: {total_expense}')
     for item in ratios:
         print(f'Quantity of {item}: {calc_item_quantity(item, quantity)}')
