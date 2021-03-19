@@ -1,5 +1,6 @@
 import math
 import decimal
+import time
 
 import requests
 import requests.compat
@@ -96,10 +97,10 @@ time_ratio_seconds = 400
 base_item = 'Adamantite ore'
 
 
-def calc_item_quantity(item, quantity):
+def calc_item_quantity(item_ratio, quantity):
     quantity = decimal.Decimal(quantity)
     base_item_ratio = decimal.Decimal(ratios[base_item])
-    item_quantity = (quantity / base_item_ratio) * ratios[item]
+    item_quantity = (quantity / base_item_ratio) * item_ratio
     item_quantity = math.ceil(item_quantity)
     return item_quantity
 
@@ -107,7 +108,7 @@ def calc_item_quantity(item, quantity):
 def calc_total_expense(quantity, values):
     total = 0
     for item in ratios:
-        item_quantity = calc_item_quantity(item, quantity)
+        item_quantity = calc_item_quantity(ratios[item], quantity)
         item_expense = item_quantity * values[item]
         total += item_expense
 
@@ -117,13 +118,13 @@ def calc_total_expense(quantity, values):
 def main():
     coins_available = rs_notation_to_int(input('Coins in: '))
 
-    print('Getting api last updated time')
+    print('\nGetting api last updated time')
     api_info = requests.get(requests.compat.urljoin(API_BASE_URL, 'info.json')).json()
     last_update_runeday = api_info['lastConfigUpdateRuneday']
     print(f'api last updated runescape day {last_update_runeday}')
 
     # values = {i: get_item_value(i, categories[i]) for i in categories}
-    print('Getting item values from api')
+    print('Getting item values from api\n')
     values = {i: get_item_value_by_id(item_ids[i]) for i in item_ids}
 
     quantity = inv_space
@@ -133,10 +134,14 @@ def main():
             break
         quantity += inv_space
 
+    print('---Results---')
     total_expense = calc_total_expense(quantity, values)
     print(f'Total expense: {total_expense}')
+    time_seconds = calc_item_quantity(time_ratio_seconds, quantity)
+    time_string = time.strftime('%H:%M', time.gmtime(time_seconds))
+    print(f'Time to use up items: {time_seconds}s, {time_string}h\n')
     for item in ratios:
-        print(f'Quantity of {item}: {calc_item_quantity(item, quantity)}')
+        print(f'Quantity of {item}: {calc_item_quantity(ratios[item], quantity)}')
 
 
 if __name__ == '__main__':
