@@ -1,18 +1,25 @@
+#!/usr/bin/env python
+
 import math
 import decimal
 import time
+import argparse
 
 import requests
 import requests.compat
-
-API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/api/'
 
 
 # todo: calculate profit
 # todo: print values got from api
 # todo: crazy idea - download and parse wiki pages in the money making category to get item lists
 # the biggest obstacle apart from a lot of work would probably be figuring out base_item
-__version__ = '0.1.1'
+__version__ = '0.1.2'
+
+API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/api/'
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('coins_available', nargs='?')
 
 
 def get_item_value_by_name(item_name, category=1):
@@ -124,7 +131,12 @@ def calc_total_expense(quantity, values):
 
 
 def main():
-    coins_available = rs_notation_to_int(input('Coins in: '))
+    args = parser.parse_args()
+    if args.coins_available is not None:
+        coins_available = args.coins_available
+    else:
+        coins_available = input('Coins in: ')
+    coins_available = rs_notation_to_int(coins_available)
 
     print('\nGetting api last updated time')
     api_info = requests.get(requests.compat.urljoin(API_BASE_URL, 'info.json')).json()
