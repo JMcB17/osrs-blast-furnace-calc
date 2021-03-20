@@ -3,7 +3,7 @@
 import math
 import decimal
 import string
-import json
+import sqlite3
 import time
 import argparse
 
@@ -28,31 +28,53 @@ parser.add_argument('-u', '--update-item-index', action='store_true',
                     help='download all the latest item ids and exit')
 
 
-def clear_pages():
-    with open('item-ids.json', 'w') as item_ids_file:
-        json.dump({}, item_ids_file)
+def open_pages_file():
+    conn = sqlite3.connect('catalogue.db')
+    cur = conn.cursor()
+
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS items
+        (icon STRING, icon_large STRING, id INT PRIMARY KEY, type STRING, typeIcon STRING, name STRING, 
+        description STRING, current_trend STRING, current_price STRING, today_trend STRING, today_price STRING,
+        members BOOL)"""
+    )
+    conn.commit()
+    return conn, cur
 
 
-def process_page(page):
-    with open('item-ids.json') as item_ids_file:
-        pages = json.load(item_ids_file)
-    for item in page['items']:
-        pages[item['name']] = item['id']
-    with open('item-ids.json', 'w') as item_ids_file:
-        json.dump(pages, item_ids_file)
+def process_page(page, conn, cur):
+    items = page['items']
+    data = []
+    for item in items:
+        data.append(
+            (
+                item['icon'], item['icon_large'],
+                item['id'],
+                item['type'], item['typeIcon'],
+                item['name'], item['description'],
+                item['current']['trend'], str(item['current']['price']),
+                item['today']['trend'], str(item['today']['price']),
+                item['members']
+            )
+        )
+
+    fillable = ','.join(['?'] * 12)
+    sql = f'REPLACE INTO items VALUES ({fillable})'
+    cur.executemany(sql, data)
+    conn.commit()
 
 
 def download_all_pages():
-    clear_pages()
+    conn, cur = open_pages_file()
 
     letters = list(string.ascii_lowercase)
     url = requests.compat.urljoin(API_BASE_URL, 'catalogue/items.json')
     categories = [1]
     for category in categories:
         print(f'Downloading category: {category}')
-        page_number = 1
         for letter in letters:
             print(f'  Downloading alpha: {letter}')
+            page_number = 1
             while True:
                 print(f'    Downloading page: {page_number}')
                 params = {
@@ -65,7 +87,7 @@ def download_all_pages():
                 if not page['items']:
                     break
                 else:
-                    process_page(page)
+                    process_page(page, conn, cur)
                     page_number += 1
 
 
@@ -196,6 +218,7 @@ def get_quantity(coins_available, values):
 def main(coins_available=None):
     args = parser.parse_args()
     if args.update_item_index:
+        print('Downloading item id index')
         download_all_pages()
         return
 
