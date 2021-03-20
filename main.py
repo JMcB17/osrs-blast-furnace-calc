@@ -16,7 +16,7 @@ import requests.compat
 # todo: print values got from api
 # todo: crazy idea - download and parse wiki pages in the money making category to get item lists
 # the biggest obstacle apart from a lot of work would probably be figuring out base_item
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/api/'
 
@@ -152,12 +152,12 @@ def rs_notation_to_int(value_str):
         'b': 10**9,
     }
 
-    value_str = value_str.replace(',', '')
+    value_str = value_str.replace(',', '').strip()
 
     for multi in multipliers:
         if value_str.endswith(multi):
             value_str = value_str.rstrip(multi)
-            value = int(value_str) * multipliers[multi]
+            value = int(float(value_str) * multipliers[multi])
             break
     else:
         value = int(value_str)
