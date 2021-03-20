@@ -25,7 +25,7 @@ parser.add_argument('--version', action='version', version=__version__)
 parser.add_argument('coins_available', nargs='?',
                     help="coins to spend on inputs, you'll be prompted for input if you don't give it here")
 parser.add_argument('-u', '--update-item-index', action='store_true',
-                    help='download all the latest item ids and exit')
+                    help='download all the latest item ids and exit (SLOW)')
 
 
 def open_pages_file():
@@ -42,6 +42,8 @@ def open_pages_file():
     return conn, cur
 
 
+# no real reason to add an option to only store id, since the limiting factor of speed is the api,
+# and the database file size is negligible.
 def process_page(page, conn, cur):
     items = page['items']
     data = []
@@ -62,6 +64,14 @@ def process_page(page, conn, cur):
     sql = f'REPLACE INTO items VALUES ({fillable})'
     cur.executemany(sql, data)
     conn.commit()
+
+
+# todo: func to make db into ids only json
+def verify_pages_file(page, cur):
+    cur.execute('SELECT COUNT(id) FROM items')
+    count = cur.fetchone()[0]
+    print(f"Items in db/items in api: {count}/{page['total']}")
+    return count == page['total']
 
 
 def download_all_pages():
@@ -85,6 +95,10 @@ def download_all_pages():
                 response = requests.get(url, params=params)
                 page = response.json()
                 if not page['items']:
+                    if category == categories[-1] and letter == letters[-1]:
+                        integrity = verify_pages_file(page, cur)
+                        conn.close()
+                        return integrity
                     break
                 else:
                     process_page(page, conn, cur)
