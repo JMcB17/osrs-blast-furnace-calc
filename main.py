@@ -2,6 +2,7 @@
 
 import math
 import decimal
+import string
 import time
 import argparse
 
@@ -22,6 +23,32 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--version', action='version', version=__version__)
 parser.add_argument('coins_available', nargs='?',
                     help="coins to spend on inputs, you'll be prompted for input if you don't give it here")
+
+
+def process_page(page):
+    pass
+
+
+def download_all_pages():
+    letters = list(string.ascii_lowercase)
+    url = requests.compat.urljoin(API_BASE_URL, 'catalogue/items.json')
+    categories = [1]
+    for category in categories:
+        page = 1
+        for letter in letters:
+            while True:
+                params = {
+                    'category': category,
+                    'alpha': letter,
+                    'page': page,
+                }
+                response = requests.get(url, params=params)
+                page = response.json()
+                if not page['items']:
+                    break
+                else:
+                    process_page(page)
+                    page += 1
 
 
 def get_item_value_by_name(item_name, category=1):
