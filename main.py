@@ -3,6 +3,7 @@
 import math
 import decimal
 import string
+import json
 import time
 import argparse
 
@@ -14,7 +15,7 @@ import requests.compat
 # todo: print values got from api
 # todo: crazy idea - download and parse wiki pages in the money making category to get item lists
 # the biggest obstacle apart from a lot of work would probably be figuring out base_item
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 
 API_BASE_URL = 'https://secure.runescape.com/m=itemdb_oldschool/api/'
 
@@ -23,24 +24,41 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--version', action='version', version=__version__)
 parser.add_argument('coins_available', nargs='?',
                     help="coins to spend on inputs, you'll be prompted for input if you don't give it here")
+parser.add_argument('-u', '--update-item-index', action='store_true',
+                    help='download all the latest item ids and exit')
+
+
+def clear_pages():
+    with open('item-ids.json', 'w') as item_ids_file:
+        json.dump({}, item_ids_file)
 
 
 def process_page(page):
-    pass
+    with open('item-ids.json') as item_ids_file:
+        pages = json.load(item_ids_file)
+    for item in page['items']:
+        pages[item['name']] = item['id']
+    with open('item-ids.json', 'w') as item_ids_file:
+        json.dump(pages, item_ids_file)
 
 
 def download_all_pages():
+    clear_pages()
+
     letters = list(string.ascii_lowercase)
     url = requests.compat.urljoin(API_BASE_URL, 'catalogue/items.json')
     categories = [1]
     for category in categories:
-        page = 1
+        print(f'Downloading category: {category}')
+        page_number = 1
         for letter in letters:
+            print(f'  Downloading alpha: {letter}')
             while True:
+                print(f'    Downloading page: {page_number}')
                 params = {
                     'category': category,
                     'alpha': letter,
-                    'page': page,
+                    'page': page_number,
                 }
                 response = requests.get(url, params=params)
                 page = response.json()
@@ -48,7 +66,7 @@ def download_all_pages():
                     break
                 else:
                     process_page(page)
-                    page += 1
+                    page_number += 1
 
 
 def get_item_value_by_name(item_name, category=1):
@@ -176,10 +194,14 @@ def get_quantity(coins_available, values):
 
 
 def main(coins_available=None):
+    args = parser.parse_args()
+    if args.update_item_index:
+        download_all_pages()
+        return
+
     if coins_available is not None:
         print(f'Coins in: {coins_available}')
     else:
-        args = parser.parse_args()
         if args.coins_available is not None:
             coins_available = args.coins_available
             print(f'Coins in: {coins_available}')
