@@ -75,7 +75,7 @@ def verify_pages_file(page, cur):
     return count == page['total']
 
 
-def pages_file_to_id_json(cur):
+def pages_file_to_id_json(page, cur):
     print('Saving name, id pairs to item-ids.json')
     cur.execute('SELECT id, name FROM items')
     item_ids_bbbb = {}
@@ -85,11 +85,17 @@ def pages_file_to_id_json(cur):
     with open('item-ids.json', 'w') as item_ids_file:
         json.dump(item_ids_bbbb, item_ids_file)
 
+    count = len(item_ids_bbbb)
+    print(f"Items in file/items in api: {count}/{page['total']}")
+    return count == page['total']
+
 
 def download_all_pages():
     conn, cur = open_pages_file()
 
     letters = list(string.ascii_lowercase)
+    # testing
+    # letters = ['a']
     url = requests.compat.urljoin(API_BASE_URL, 'catalogue/items.json')
     categories = [1]
     for category in categories:
@@ -109,7 +115,7 @@ def download_all_pages():
                 if not page['items']:
                     if category == categories[-1] and letter == letters[-1]:
                         integrity = verify_pages_file(page, cur)
-                        pages_file_to_id_json(cur)
+                        pages_file_to_id_json(page, cur)
                         conn.close()
                         return integrity
                     break
