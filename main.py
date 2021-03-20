@@ -3,6 +3,7 @@
 import math
 import decimal
 import string
+import json
 import sqlite3
 import time
 import argparse
@@ -74,6 +75,17 @@ def verify_pages_file(page, cur):
     return count == page['total']
 
 
+def pages_file_to_id_json(cur):
+    print('Saving name, id pairs to item-ids.json')
+    cur.execute('SELECT id, name FROM items')
+    item_ids_bbbb = {}
+    for item in cur:
+        item_ids_bbbb[item[1]] = item[0]
+
+    with open('item-ids.json', 'w') as item_ids_file:
+        json.dump(item_ids_bbbb, item_ids_file)
+
+
 def download_all_pages():
     conn, cur = open_pages_file()
 
@@ -97,6 +109,7 @@ def download_all_pages():
                 if not page['items']:
                     if category == categories[-1] and letter == letters[-1]:
                         integrity = verify_pages_file(page, cur)
+                        pages_file_to_id_json(cur)
                         conn.close()
                         return integrity
                     break
