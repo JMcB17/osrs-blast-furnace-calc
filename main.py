@@ -12,7 +12,6 @@ import requests
 import requests.compat
 
 
-# todo: option to reduce gross by 5% and increase prices by 5%  like when you buy and sell
 # todo: print values got from api
 # todo: crazy idea - download and parse wiki pages in the money making category to get item lists
 # the biggest obstacle apart from a lot of work would probably be figuring out base_item
@@ -25,6 +24,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--version', action='version', version=__version__)
 parser.add_argument('coins_available', nargs='?',
                     help="coins to spend on inputs, you'll be prompted for input if you don't give it here")
+parser.add_argument('-p', '--plus-five-percent-buy', action='store_true',
+                    help='increase buy prices by five percent')
+parser.add_argument('-m', '--minus-five-percent-sell', action='store_true',
+                    help='decrease sell prices by five percent')
 parser.add_argument('-u', '--update-item-index', action='store_true',
                     help='download all the latest item ids and exit (SLOW)')
 
@@ -248,6 +251,20 @@ def get_quantity(coins_available, values):
     return quantity
 
 
+def download_values(inc_5p, dec_5p):
+    values = {}
+    for item in item_ids:
+        value = get_item_value_by_id(item_ids[item])
+        if item != 'Coins':
+            if item == product_item and dec_5p:
+                value *= 0.95
+            elif inc_5p:
+                value *= 1.05
+        values[item] = value
+
+    return values
+
+
 def main(coins_available=None):
     args = parser.parse_args()
     if args.update_item_index:
@@ -274,7 +291,7 @@ def main(coins_available=None):
 
         # values = {i: get_item_value(i, categories[i]) for i in categories}
         print('Getting item values from api\n')
-        item_values = {i: get_item_value_by_id(item_ids[i]) for i in item_ids}
+        item_values = download_values(args.plus_five_percent_buy, args.minus_five_percent_sell)
 
         quantity = get_quantity(coins_available, item_values)
         base_item_quantity = calc_item_quantity(item_ratios[base_item], quantity)
