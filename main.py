@@ -257,9 +257,9 @@ def download_values(inc_5p, dec_5p):
         value = get_item_value_by_id(item_ids[item])
         if item != 'Coins':
             if item == product_item and dec_5p:
-                value *= 0.95
+                value = decimal.Decimal(value) * 0.95
             elif inc_5p:
-                value *= 1.05
+                value = decimal.Decimal(value) * 1.05
         values[item] = value
 
     return values
